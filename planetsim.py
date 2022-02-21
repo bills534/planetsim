@@ -5,8 +5,11 @@ import math
 pygame.init()
 
 FRAMES_PER_TICK = 60
-WIDTH, HEIGHT = 800, 800
-WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+INFO_BAR_OFFSET = 100
+ORBIT_TRAIL = 400
+SIM_RATE = 1  # bigger number = "slower" simulation
+WIDTH, HEIGHT = 800, 800 + INFO_BAR_OFFSET
+WIN = pygame.display.set_mode((WIDTH, HEIGHT ))
 pygame.display.set_caption("Planet Orbit Sim")
 
 WHITE = (255,255,255)
@@ -21,8 +24,8 @@ class Planet:
     
     AU = 149.6e6 * 1000     # astronomical unit, the approximate distance from the earth to the sun
     G = 6.67428e-11         # gravitational constant
-    SCALE = 250 / AU        # 1 AU = 100 pixels
-    TIMESTEP = 3600 * 24    # seconds in an hour * hours in a day
+    SCALE = 200 / AU        # 1 AU = 100 pixels
+    TIMESTEP = (3600 * 24) / SIM_RATE    # seconds in an hour * hours in a day
 
     def __init__(self, x, y, radius, color, mass):
         self.x = x
@@ -51,14 +54,15 @@ class Planet:
                 updated_points.append((x,y))
             
             # draw the orbit lines
-            updated_points = updated_points[-200:]
+            updated_points = updated_points[-ORBIT_TRAIL:]
             pygame.draw.lines(win, self.color, False, updated_points, 2)
 
 
         pygame.draw.circle(win, self.color, (x, y), self.radius)
         if not self.sun:
-            distance_text = FONT.render(f'{round(self.distance_to_sun/1000, 1)}km', 1, WHITE)
-            Y_OFFSET = -18
+            distance_label_amount = '{:,}'.format(round(self.distance_to_sun/1000))
+            distance_text = FONT.render(f'{distance_label_amount}km', 1, WHITE)
+            Y_OFFSET = -18  # Moves the label away from the center of the planets
             x_text_pos = x - distance_text.get_width()/2
             y_text_pos = y - distance_text.get_height()/2 + Y_OFFSET
             win.blit(distance_text, (x_text_pos, y_text_pos))
@@ -108,16 +112,16 @@ def main():
     sun = Planet(0, 0, 30, YELLOW, 1.98892 * 10**30)
     sun.sun = True
 
-    mercury = Planet(0.387 * Planet.AU, 0, 3, DARK_GREY, 3.30 * 10**23)
+    mercury = Planet(0.387 * Planet.AU, 0, 4, DARK_GREY, 3.30 * 10**23)
     mercury.y_vel = -47.4 * 1000
 
-    venus = Planet(0.723 * Planet.AU, 0, 8, WHITE, 4.8685 * 10**24)
+    venus = Planet(0.723 * Planet.AU, 0, 9, WHITE, 4.8685 * 10**24)
     venus.y_vel = -35.02 * 1000
 
-    earth = Planet(-1 * Planet.AU, 0, 9, BLUE, 5.9742 * 10**24)
+    earth = Planet(-1 * Planet.AU, 0, 10, BLUE, 5.9742 * 10**24)
     earth.y_vel = 29.783 * 1000
 
-    mars = Planet(-1.524 * Planet.AU, 0, 6, RED, 6.39 * 10**23)
+    mars = Planet(-1.524 * Planet.AU, 0, 7, RED, 6.39 * 10**23)
     mars.y_vel = 24.077 * 1000
 
     planets = [sun, mercury, venus, earth, mars ]
